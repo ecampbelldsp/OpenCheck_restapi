@@ -19,8 +19,8 @@ contact: ecampbelldsp@gmail.com
 import requests
 import json
 
-code = "B4y9y-324-spCnTq-sYobT8OGN_PV5YDYaWBXsUt7BY"
-redirect_uri = 'https://f8ea-81-42-207-0.eu.ngrok.io'
+code = "ZyVD5vGIlv2m9CJtNEBl3PSIFNfViJaDiMfvOINf7Pw"
+redirect_uri = 'https://6fdb-5-224-24-2.eu.ngrok.io'
 payload_token_access = {'client_id': 'live1_212599_hWCSK6qFsz2G5kTdPAxORe7c', 'client_secret': 'QjXqDKRZnpTxehV27I6a8vCS4UJcPYNM', 'redirect_uri':redirect_uri,'code':code, 'grant_type':'authorization_code'}
 
 url_access_token = 'https://hotels.cloudbeds.com/api/v1.1/access_token'

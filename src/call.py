@@ -1,6 +1,7 @@
 import json
 import os.path
 import requests
+import re
 
 
 class Request:
@@ -131,8 +132,14 @@ class Request:
         r = requests.request("GET", url, headers=header)
 
         if self.response_is_success(r):
-            response = json.loads(r.text)
-            return response
+            response_in_str = re.sub('true', '"true"', r.text)
+            # response_in_str = re.sub('\[' + '\]', '""', r.text)
+            response_in_str = re.sub('false', '"false"', response_in_str)
+            # response_in_str = re.sub('\n', '', response_in_str)
+
+            response_in_json = json.loads(response_in_str, parse_int=str, parse_float=str, parse_constant=str)
+
+            return response_in_json
 
     def put_reservation(self, reservation_id: str, status: str):
         """

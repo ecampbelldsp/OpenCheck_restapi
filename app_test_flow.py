@@ -8,14 +8,8 @@ contact: ecampbelldsp@gmail.com
 """
 
 from src.call import Request
-from flask import Flask
-from flask_cors import CORS
-import re
 from hd.cam import take_picture
-
-app = Flask(__name__)
-CORS(app)
-
+import re
 
 
 
@@ -31,31 +25,40 @@ code = "ZyVD5vGIlv2m9CJtNEBl3PSIFNfViJaDiMfvOINf7Pw"
 state = "fb08f0d2ff44e959fcd83dc20e58a8c0d729cf6f62fe32ab49ecf"
 
 # reservation_id = "4442365621388"
-@app.route("/")
 def Hello():
     return "Welcome to my API-restful functionality"
 
-@app.route("/getReservation/<reservation_id>")
 def getReservation(reservation_id):
     request = Request(client_id, client_secret, redirect_uri, code, path_tokens)
     # print(request.get_reservation(reservation_id))
     response = request.get_reservation(reservation_id)
 
     if response["success"]:
+
         tmp = str(response["data"]) #str(response["data"])
         response_2 = re.sub("'", '"', tmp)
         # response_2[0]="'"
         # response_2[-1] = "'"
-        return response_2#response["data"] #str(response["data"])    else:
+        return response_2#response["data"] #str(response["data"])
+
+        new_response = {"reservationID":"", "guestFirstName":"","guestLastName":"","guestEmail":"",
+                        "guestCellPhone":"","guestAddress1":"","guestCity":"","guestCountry":"",
+                        "guestState":"","guestZip":"","guestBirthDate":"","guestDocumentType":"",
+                        "guestDocumentNumber":"","guestDocumentIssueDate":"","guestDocumentIssuingCountry":"",
+                        "guestDocumentExpirationDate":"","roomType":"","startDate":"","endDate": "",
+                        "adults": "","children": "","paid": "","balance": "","paidStatus": "","success":""};
+
     else:
         return "error"
 
 
-@app.route("/cam")
 def picture():
     return take_picture()
 
 
+data = getReservation("4442365621388")
+
+print(1)
 # if request.reservation_is_paid(reservation_id):
 #     print("Reservation paid")
 # else:
