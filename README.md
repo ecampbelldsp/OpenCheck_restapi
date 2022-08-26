@@ -1,1 +1,2 @@
-# OpenCheck_restapi
+# open_check
+OpenCheck's repository in Python
