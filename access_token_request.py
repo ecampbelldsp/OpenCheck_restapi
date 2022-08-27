@@ -19,7 +19,7 @@ contact: ecampbelldsp@gmail.com
 import requests
 import json
 
-code = "ZyVD5vGIlv2m9CJtNEBl3PSIFNfViJaDiMfvOINf7Pw"
+code = "jHqpWVqrM9rjxlngdAyXjYSeEZ89xa5A6OfKKqGR_J0"
 redirect_uri = 'https://6fdb-5-224-24-2.eu.ngrok.io'
 payload_token_access = {'client_id': 'live1_212599_hWCSK6qFsz2G5kTdPAxORe7c', 'client_secret': 'QjXqDKRZnpTxehV27I6a8vCS4UJcPYNM', 'redirect_uri':redirect_uri,'code':code, 'grant_type':'authorization_code'}
 
