@@ -89,6 +89,7 @@ def get_reservation():
 
         # Room reservation info
         for room in json['unassigned']:
+            reservation_out['roomID'].append(room.get('roomID'))
             reservation_out['roomTypeID'].append(room.get('roomTypeID'))
             reservation_out['roomTypeName'].append(room.get('roomTypeName'))
             reservation_out['roomID'].append(room.get('roomID'))
@@ -98,6 +99,7 @@ def get_reservation():
             reservation_out['children'].append(room.get('children'))
 
         for room in json['assigned']:
+            reservation_out['roomID'].append(room.get('roomID'))
             reservation_out['roomTypeID'].append(room.get('roomTypeID'))
             reservation_out['roomTypeName'].append(room.get('roomTypeName'))
             reservation_out['roomID'].append(room.get('roomID'))
