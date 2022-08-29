@@ -8,13 +8,13 @@ redirect_uri = "https://81ee-31-4-128-46.eu.ngrok.io"
 client_secret = 'gwSvTrFauEbt4OkKy1sVGCnB3hpcjf7I'
 
 scope = "write:guest read:guest write:reservation read:reservation"
-code_4_scope_guest_and_reservation = "v9Kc5kU3yWb9tp0NawUiuh7eviuuqTKDSjW25FPMUIU"
-state_4_scope_guest_and_reservation = "fb08f0d2ff44e959fcd83dc20e58a8c0d729cf6f630c7b2b1fb2f"
+code_4_scope_guest_and_reservation = "dq5Fma8tKu0UheY0ZOe8Uv31fP9ybumSps_T72dGtoE"
+state_4_scope_guest_and_reservation = "fb08f0d2ff44e959fcd83dc20e58a8c0d729cf6f630c9f0883630"
 path_tokens = "data/tokens_guests_and_reservation.json"
 
-code_4_scope_payment_and_room = "hqtyfq46xNn_E5SLz-R2tlRj6nEdwi_JyX78LkSExfg"
-state_4_scope_payment_and_room = "fb08f0d2ff44e959fcd83dc20e58a8c0d729cf6f630c7b5554c79"
-path_tokens_paymeent_and_room = "data/tokens_payments_and_room.json"
+code_4_scope_payment_and_room = "UWXQi3Foixd3cNOJV6N7HOOoPW0FNeawSSjv4bg4Jws"
+state_4_scope_payment_and_room = "fb08f0d2ff44e959fcd83dc20e58a8c0d729cf6f630c9f340b048"
+path_tokens_payment_and_room = "data/tokens_payments_and_room.json"
 
 reservation_id = "0934955461346"
 guest_id = '55949917'
@@ -31,4 +31,4 @@ request_guest_and_reservation = RequestVersion2(client_id, client_secret, redire
                                                 path_tokens)
 
 request_payment_and_room = RequestVersion2(client_id, client_secret, redirect_uri, code_4_scope_payment_and_room,
-                                           path_tokens_paymeent_and_room)
+                                           path_tokens_payment_and_room)
