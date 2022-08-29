@@ -3,52 +3,93 @@
 """
 Created on  19/8/22 14:17
 
-@author: Edward L. Campbell Hernández
-contact: ecampbelldsp@gmail.com
+@author: Edward L. Campbell Hernández & José M. Ramírez
+contact: ecampbelldsp@gmail.com & ramirezsanchezjosem@gmail.com
 """
 
-from src.call import Request
-from flask import Flask
+from flask import Flask, render_template, jsonify, request
+from src.config import request_guest_and_reservation, request_payment_and_room
 from flask_cors import CORS
-import re
 from hd.cam import take_picture
 
 app = Flask(__name__)
 CORS(app)
 
 
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 
-property_id = '212599'
-client_id = "live1_212599_hWCSK6qFsz2G5kTdPAxORe7c"
-redirect_uri = 'https://6fdb-5-224-24-2.eu.ngrok.io'
-scope = "write:guest read:guest write:reservation read:reservation"
-client_secret = 'QjXqDKRZnpTxehV27I6a8vCS4UJcPYNM'
-path_tokens = "data/access_token.json"
+@app.route('/ping')
+def ping():
+    return jsonify({"success": "True", "message": "pong"})
 
 
-code = "ZyVD5vGIlv2m9CJtNEBl3PSIFNfViJaDiMfvOINf7Pw"
-state = "fb08f0d2ff44e959fcd83dc20e58a8c0d729cf6f62fe32ab49ecf"
+@app.route('/getReservation')
+def get_reservation():
+    reservation_id = request.args.get('reservationID', None)  # use default value repalce 'None'
+    return request_guest_and_reservation.get_reservation(reservation_id)
 
-# reservation_id = "4442365621388"
-@app.route("/")
-def Hello():
-    return "Welcome to my API-restful functionality"
 
-@app.route("/getReservation/<reservation_id>")
-def getReservation(reservation_id):
-    request = Request(client_id, client_secret, redirect_uri, code, path_tokens)
-    # print(request.get_reservation(reservation_id))
-    response = request.get_reservation(reservation_id)
+@app.route('/putReservation', methods=['PUT'])
+def put_reservation():
+    reservation_id = request.args.get('reservationID', None)
+    status = request.args.get('status', None)
+    return request_guest_and_reservation.put_reservation(reservation_id, status)
 
-    if response["success"]:
-        tmp = str(response["data"]) #str(response["data"])
-        response_2 = re.sub("'", '"', tmp)
-        # response_2[0]="'"
-        # response_2[-1] = "'"
-        return response_2#response["data"] #str(response["data"])    else:
-    else:
-        return "error"
+
+@app.route('/postReservation', methods=['POST'])
+def post_reservation():
+    return request_guest_and_reservation.post_reservation(request.json)
+
+
+@app.route('/getReservationInvoiceInformation')
+def get_reservation_invoice_information():
+    reservation_id = request.args.get('reservationID', None)
+    return request_guest_and_reservation.get_reservation_invoice_information(reservation_id)
+
+
+@app.route('/getGuestsInformation')
+def get_guests_info():
+    reservation_id = request.args.get('reservationID', None)
+    return request_guest_and_reservation.get_guest_info_in_reservation(reservation_id)
+
+
+@app.route('/getNumberOfGuests')
+def how_many_guests():
+    reservation_id = request.args.get('reservationID', None)
+    return request_guest_and_reservation.get_number_of_guests(reservation_id)
+
+
+@app.route('/postGuestDocument')
+def post_guest_document():
+    guest_id = request.args.get('guestID', None)
+    path_to_document = request.arg.get('pathDocument', None)
+    return request_guest_and_reservation.post_guest_document(guest_id, path_to_document)
+
+
+@app.route('/postReservationDocument')
+def post_reservation_document():
+    reservation_id = request.args.get('reservationID', None)
+    path_to_document = request.arg.get('pathDocument', None)
+    return request_guest_and_reservation.post_guest_document(reservation_id, path_to_document)
+
+
+@app.route('/reservationIsPaid')
+def reservation_is_paid():
+    reservation_id = request.args.get('reservationID', None)
+    return request_guest_and_reservation.reservation_is_paid(reservation_id)
+
+
+@app.route('/postPayment')
+def post_payment():
+    reservation_id = request.args.get('reservationID', None)
+    amount = request.args.get('amount', None)
+    payment_type = request.args.get('type', 'card')
+    card_type: str = request.args.get('cardType', None)
+
+    return request_payment_and_room.post_payment(reservation_id, amount, payment_type, card_type)
 
 
 @app.route("/cam")
@@ -56,11 +97,6 @@ def picture():
     return take_picture()
 
 
-# if request.reservation_is_paid(reservation_id):
-#     print("Reservation paid")
-# else:
-#     balance = request.how_much_to_paid(reservation_id)
-#     print(f"You need to pay: {balance}")
-#     print(request.post_payment(reservation_id, balance, 'credit', 'master'))
-#
-# print(request.put_reservation(reservation_id, "checked_in"))
+if __name__ == '__main__':
+    # Flask app
+    app.run(debug=True)
