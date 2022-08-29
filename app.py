@@ -28,8 +28,100 @@ def ping():
 
 @app.route('/getReservation')
 def get_reservation():
-    reservation_id = request.args.get('reservationID', None)  # use default value repalce 'None'
-    return request_guest_and_reservation.get_reservation(reservation_id)
+    def post_processing_reservation(json: dict):
+
+        reservation_out = {
+            "reservationID": json.get("reservationID"),
+            "guestName": json.get("guestName"),
+            "guestEmail": json.get("guestEmail"),
+            "guestID": "",
+            "guestFirstName": "",
+            "guestLastName": "",
+            "guestCellPhone": "",
+            "guestAddress1": "",
+            "guestCity": "",
+            "guestCountry": "",
+            "guestState": "",
+            "guestZip": "",
+            "guestBirthDate": "",
+            "guestDocumentType": "",
+            "guestDocumentNumber": "",
+            "guestDocumentIssueDate": "",
+            "guestDocumentIssuingCountry": "",
+            "guestDocumentExpirationDate": "",
+            "roomTypeID": [],
+            "roomID": [],
+            "startDate": [],
+            "endDate": [],
+            "adults": [],
+            "children": [],
+            "paid": "",
+            "balance": "",
+            "paidStatus": "",
+            "success": "true"
+        }
+
+        # Guests reservation info
+        guests_info = json['guestList']
+        for guest_id in guests_info.keys():
+            guest_data = guests_info[guest_id]
+
+            if guest_data['guestFirstName'] in reservation_out['guestName'] and \
+                    guest_data['guestLastName'] in reservation_out['guestName']:
+
+                reservation_out['guestID'] = guest_data['guestID']
+                reservation_out['guestFirstName'] = guest_data['guestFirstName']
+                reservation_out['guestLastName'] = guest_data['guestLastName']
+                reservation_out['guestGender'] = guest_data['guestGender']
+                reservation_out['guestEmail'] = guest_data['guestEmail']
+                reservation_out['guestPhone'] = guest_data['guestPhone']
+                reservation_out['guestCellPhone'] = guest_data['guestCellPhone']
+                reservation_out['guestCountry'] = guest_data['guestCountry']
+                reservation_out['guestAddress'] = guest_data['guestAddress']
+                reservation_out['guestCity'] = guest_data['guestCity']
+                reservation_out['guestZip'] = guest_data['guestZip']
+                reservation_out['guestState'] = guest_data['guestState']
+                reservation_out['guestBirthdate'] = guest_data['guestBirthdate']
+                reservation_out['guestDocumentType'] = guest_data['guestDocumentType']
+                reservation_out['guestDocumentNumber'] = guest_data['guestDocumentNumber']
+                reservation_out['guestDocumentIssueDate'] = guest_data['guestDocumentIssueDate']
+                reservation_out['guestDocumentExpirationDate'] = guest_data['guestDocumentExpirationDate']
+                reservation_out['guestDocumentIssuingCountry'] = guest_data['guestDocumentIssuingCountry']
+
+        # Room reservation info
+        for room in json['unassigned']:
+            reservation_out['roomTypeID'].append(room.get('roomTypeID'))
+            reservation_out['roomID'].append(room.get('roomID'))
+            reservation_out['startDate'].append(room.get('startDate'))
+            reservation_out['endDate'].append(room.get('endDate'))
+            reservation_out['adults'].append(room.get('adults'))
+            reservation_out['children'].append(room.get('children'))
+
+        for room in json['assigned']:
+            reservation_out['roomTypeID'].append(room.get('roomTypeID'))
+            reservation_out['roomID'].append(room.get('roomID'))
+            reservation_out['startDate'].append(room.get('startDate'))
+            reservation_out['endDate'].append(room.get('endDate'))
+            reservation_out['adults'].append(room.get('adults'))
+            reservation_out['children'].append(room.get('children'))
+
+        # Invoice reservation info
+        total = json['balanceDetailed']['grandTotal']
+        paid = json['balanceDetailed']['paid']
+        balance = float(total) - float(paid)
+
+        reservation_out["paid"] = paid
+        reservation_out["balance"] = "0" if balance < 0 else f"{balance}"
+
+        reservation_out["paidStatus"] = "false" if balance > 0 else "true"
+
+        return reservation_out
+
+    reservation_id = request.args.get('reservationID', None)
+    response_in_json = request_guest_and_reservation.get_reservation(reservation_id)
+
+    open_check_reservation = post_processing_reservation(response_in_json['data'])
+    return open_check_reservation
 
 
 @app.route('/putReservation', methods=['PUT'])
