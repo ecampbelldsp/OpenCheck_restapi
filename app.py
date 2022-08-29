@@ -50,6 +50,7 @@ def get_reservation():
             "guestDocumentIssuingCountry": "",
             "guestDocumentExpirationDate": "",
             "roomTypeID": [],
+            "roomTypeName": [],
             "roomID": [],
             "startDate": [],
             "endDate": [],
@@ -88,6 +89,7 @@ def get_reservation():
 
         # Room reservation info
         for room in json['unassigned']:
+            reservation_out['roomID'].append(room.get('roomID'))
             reservation_out['roomTypeID'].append(room.get('roomTypeID'))
             reservation_out['roomID'].append(room.get('roomID'))
             reservation_out['startDate'].append(room.get('startDate'))
@@ -96,6 +98,7 @@ def get_reservation():
             reservation_out['children'].append(room.get('children'))
 
         for room in json['assigned']:
+            reservation_out['roomID'].append(room.get('roomID'))
             reservation_out['roomTypeID'].append(room.get('roomTypeID'))
             reservation_out['roomID'].append(room.get('roomID'))
             reservation_out['startDate'].append(room.get('startDate'))
