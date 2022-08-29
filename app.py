@@ -58,7 +58,6 @@ def get_reservation():
             "paid": "",
             "balance": "",
             "paidStatus": "",
-            "success": "true"
         }
 
         # Guests reservation info
@@ -68,7 +67,6 @@ def get_reservation():
 
             if guest_data['guestFirstName'] in reservation_out['guestName'] and \
                     guest_data['guestLastName'] in reservation_out['guestName']:
-
                 reservation_out['guestID'] = guest_data['guestID']
                 reservation_out['guestFirstName'] = guest_data['guestFirstName']
                 reservation_out['guestLastName'] = guest_data['guestLastName']
@@ -115,7 +113,7 @@ def get_reservation():
 
         reservation_out["paidStatus"] = "false" if balance > 0 else "true"
 
-        return reservation_out
+        return {"success": "true", "data": reservation_out}
 
     reservation_id = request.args.get('reservationID', None)
     response_in_json = request_guest_and_reservation.get_reservation(reservation_id)
