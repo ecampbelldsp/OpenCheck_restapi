@@ -42,3 +42,5 @@ def take_picture():
     cv2.imwrite(date_str+".png", image)
     cam.release()
     cv2.destroyAllWindows()
+
+take_picture()

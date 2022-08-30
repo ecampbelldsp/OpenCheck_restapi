@@ -160,14 +160,14 @@ def how_many_guests():
 @app.route('/postGuestDocument')
 def post_guest_document():
     guest_id = request.args.get('guestID', None)
-    path_to_document = request.arg.get('pathDocument', None)
+    path_to_document = request.args.get('pathDocument', None)
     return request_guest_and_reservation.post_guest_document(guest_id, path_to_document)
 
 
 @app.route('/postReservationDocument')
 def post_reservation_document():
     reservation_id = request.args.get('reservationID', None)
-    path_to_document = request.arg.get('pathDocument', None)
+    path_to_document = request.args.get('pathDocument', None)
     return request_guest_and_reservation.post_guest_document(reservation_id, path_to_document)
 
 
@@ -189,7 +189,8 @@ def post_payment():
 
 @app.route("/cam")
 def picture():
-    return take_picture()
+    flag = take_picture()
+    return flag
 
 
 if __name__ == '__main__':

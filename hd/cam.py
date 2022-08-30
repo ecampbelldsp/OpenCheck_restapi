@@ -25,22 +25,26 @@ def take_picture():
             index += 1
             i -= 1
         return arr
+    try:
+        ind = returnCameraIndexes()
 
-    ind = returnCameraIndexes()
+        cam = cv2.VideoCapture(ind[-1])
 
-    cam = cv2.VideoCapture(ind[-1])
+        date = datetime.now()
+        date_str = date.strftime("%d_%m_%Y_%H_%M_%S")
+        # sleep(1)
+        # while True:
+        ret, image = cam.read()
+            # cv2.imshow('Imagetest',image)
+            # k = cv2.waitKey(1)
+            # if k != -1:
+            # 		break
+        cv2.imwrite("data/photo/picture.png", image)
+        cam.release()
+        cv2.destroyAllWindows()
 
-    date = datetime.now()
-    date_str = date.strftime("%d_%m_%Y_%H_%M_%S")
-    # sleep(1)
-    # while True:
-    ret, image = cam.read()
-        # cv2.imshow('Imagetest',image)
-        # k = cv2.waitKey(1)
-        # if k != -1:
-        # 		break
-    cv2.imwrite("data/photo/"+date_str+".png", image)
-    cam.release()
-    cv2.destroyAllWindows()
+        return '{"success":"true","path":"data/photo/picture.png"}'
+    except:
+        return '{"success":"false","path":""}'
 
-    return "0"
+
