@@ -114,6 +114,7 @@ def get_reservation():
         balance = float(total) - float(paid)
 
         reservation_out["paid"] = paid
+        reservation_out["total"] = total
         reservation_out["balance"] = "0" if balance < 0 else f"{balance}"
 
         reservation_out["paidStatus"] = "false" if balance > 0 else "true"

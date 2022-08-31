@@ -24,7 +24,7 @@ request_guest_and_reservation = RequestVersion2(client_id, client_secret, redire
                                                 code_4_scope_guest_and_reservation, path_tokens)
 
 request_payment_and_room = RequestVersion2(client_id, client_secret, redirect_uri,
-                                           code_4_scope_payment_and_room, path_tokens_paymeent_and_room)
+                                           code_4_scope_payment_and_room, path_tokens_payment_and_room)
 
 
 # Playground
