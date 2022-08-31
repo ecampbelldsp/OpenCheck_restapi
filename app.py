@@ -108,10 +108,11 @@ def get_reservation():
             reservation_out['adults'].append(room.get('adults'))
             reservation_out['children'].append(room.get('children'))
 
+        # Pre-processing stage for Frontend
         for key in reservation_out.keys():
             data = reservation_out[key]
             if isinstance(data, list):
-                reservation_out[key] = " _ ".join(data)
+                reservation_out[key] = " _ ".join(set(data))
 
         # Invoice reservation info
         total = json['balanceDetailed']['grandTotal']
