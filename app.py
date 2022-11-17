@@ -9,11 +9,17 @@ contact: ecampbelldsp@gmail.com & ramirezsanchezjosem@gmail.com
 
 from flask import Flask, render_template, jsonify, request
 from src.config import request_guest_and_reservation, request_payment_and_room
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from hd.cam import take_picture
 
 app = Flask(__name__)
+
+# app.config['CORS_HEADERS'] = 'Content-Type'
+
+# CORS(app)
 CORS(app)
+
+# CORS(app, resources=r'/api/*')
 
 
 @app.route('/')
@@ -89,22 +95,22 @@ def get_reservation():
 
         # Room reservation info
         for room in json['unassigned']:
-            reservation_out['roomID'].append(room.get('roomID'))
-            reservation_out['roomTypeID'].append(room.get('roomTypeID'))
+            # reservation_out['roomID'].append(room.get('roomID'))
+            reservation_out['roomID'].append(room.get('roomTypeID'))
             reservation_out['roomTypeName'].append(room.get('roomTypeName'))
-            reservation_out['roomID'].append(room.get('roomID'))
-            reservation_out['startDate'].append(room.get('startDate'))
-            reservation_out['endDate'].append(room.get('endDate'))
+            # reservation_out['roomID'].append(room.get('roomID'))
+            reservation_out['startDate'].append(room.get('dailyRates')[0]['date'])  #    room.get('startDate')
+            reservation_out['endDate'].append(room.get('dailyRates')[-1]['date'])
             reservation_out['adults'].append(room.get('adults'))
             reservation_out['children'].append(room.get('children'))
 
         for room in json['assigned']:
-            reservation_out['roomID'].append(room.get('roomID'))
-            reservation_out['roomTypeID'].append(room.get('roomTypeID'))
+            # reservation_out['roomID'].append(room.get('roomID'))
+            reservation_out['roomID'].append(room.get('roomTypeID'))
             reservation_out['roomTypeName'].append(room.get('roomTypeName'))
-            reservation_out['roomID'].append(room.get('roomID'))
-            reservation_out['startDate'].append(room.get('startDate'))
-            reservation_out['endDate'].append(room.get('endDate'))
+            # reservation_out['roomID'].append(room.get('roomID'))
+            reservation_out['startDate'].append(room.get('dailyRates')[0]['date'])
+            reservation_out['endDate'].append(room.get('dailyRates')[-1]['date'])
             reservation_out['adults'].append(room.get('adults'))
             reservation_out['children'].append(room.get('children'))
 
@@ -112,7 +118,9 @@ def get_reservation():
         for key in reservation_out.keys():
             data = reservation_out[key]
             if isinstance(data, list):
-                reservation_out[key] = " _ ".join(set(data))
+                # data = ['' for d in data if d is None]
+                data_set = set(data) 
+                reservation_out[key] = " _ ".join(data_set)
 
         # Invoice reservation info
         total = json['balanceDetailed']['grandTotal']

@@ -12,23 +12,24 @@ import cv2
 from datetime import datetime
 
 def take_picture():
-    def returnCameraIndexes():
-        # checks the first 10 indexes.
-        index = 0
-        arr = []
-        i = 3
-        while i > 0:
-            cap = cv2.VideoCapture(index)
-            if cap.read()[0]:
-                arr.append(index)
-                cap.release()
-            index += 1
-            i -= 1
-        return arr
+    # def returnCameraIndexes():
+    #     # checks the first 10 indexes.
+    #     index = 0
+    #     arr = []
+    #     i = 3
+    #     while i > 0:
+    #         cap = cv2.VideoCapture(index)
+    #         if cap.read()[0]:
+    #             arr.append(index)
+    #             cap.release()
+    #         index += 1
+    #         i -= 1
+    #     return arr
     try:
-        ind = returnCameraIndexes()
+    #     ind = returnCameraIndexes()
 
-        cam = cv2.VideoCapture(ind[-1])
+        # cam = cv2.VideoCapture(ind[-1])
+        cam = cv2.VideoCapture(1)
 
         date = datetime.now()
         date_str = date.strftime("%d_%m_%Y_%H_%M_%S")
