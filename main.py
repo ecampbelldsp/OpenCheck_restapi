@@ -124,9 +124,9 @@ def check_in_without_reservation(guest_info):
             print(f"\t{ind + 1}. {room['roomTypeName']}")
         print("\nPor favor, introduzca el número correspondiente al tipo de habitación q desea")
 
-        room_info = {'rooms': [{"roomTypeID": 409036, "roomRateID": 1185538, "quantity": 1}]}
-        adults = {'adults': [{"roomTypeID": 409036, "quantity": 2, "roomID": ""}]}
-        children = {'children': [{"roomTypeID": 409036, "quantity": 0, "roomID": ""}]}
+        room_info = {'rooms': [{"roomTypeID": room.get('roomTypeID'), "roomRateID": room.get('roomRateID'), "quantity": 1}]}
+        adults = {'adults': [{"roomTypeID": room.get('roomTypeID'), "quantity": guest_info.get('adults'), "roomID": ""}]}
+        children = {'children': [{"roomTypeID": room.get('roomTypeID'), "quantity": guest_info.get('children'), "roomID": ""}]}
 
         guest_info.update(room_info)
         guest_info.update(adults)
