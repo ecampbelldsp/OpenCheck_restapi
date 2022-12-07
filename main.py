@@ -109,7 +109,7 @@ def check_in_with_reservation(_reservation_id, _request_guest_and_reservation, _
 
 
 def check_in_without_reservation(guest_info):
-    guest_info.update({'propertyID': property_id, 'paymentMethod': 'cash'})
+    guest_info.update({'propertyID': property_id, 'paymentMethod': 'card'})
 
     available_rooms = request_payment_and_room.get_available_room_types(guest_info['startDate'], guest_info['endDate'],
                                                                         guest_info['rooms'], guest_info['adults'],
@@ -155,16 +155,16 @@ def check_out(_reservation_id: str, _request_guest_and_reservation: RequestVersi
         print(_request_payment_and_room.post_payment(_reservation_id, balance, 'credit', 'master'))
 
 
-request_guest_and_reservation.invoice_detailed(reservation_id)
-
-# Flow Check-In with reservation ID.
-check_in_with_reservation(reservation_id, request_guest_and_reservation, request_payment_and_room, guest_docu_path,
-                          reservation_docu_path)
+# request_guest_and_reservation.invoice_detailed(reservation_id)
+#
+# # Flow Check-In with reservation ID.
+# check_in_with_reservation(reservation_id, request_guest_and_reservation, request_payment_and_room, guest_docu_path,
+#                           reservation_docu_path)
 
 # Flow Check-In without reservation ID.
 guest_information = {
-    "startDate": "2022-11-06",
-    "endDate": "2022-11-15",
+    "startDate": "2022-12-08",
+    "endDate": "2022-12-10",
     "guestFirstName": "Jose",
     "guestLastName": "Manuel",
     "guestCountry": "US",
