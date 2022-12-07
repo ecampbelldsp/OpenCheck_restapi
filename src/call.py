@@ -113,7 +113,6 @@ class RequestVersion2:
 
         r = requests.request("POST", url, data=payload)
         response = json.loads(r.text)
-        print(response)
 
         if r.status_code == 200:
             self.write_json(response, self.TOKENS_PATH)
@@ -533,7 +532,7 @@ class RequestVersion2:
         """
 
         def filter_rooms_available(response_data):
-            filter_rooms = []
+            filter_rooms, name_rooms = [], []
 
             request_info_room = {}
             for room in response_data['propertyRooms']:
@@ -549,10 +548,11 @@ class RequestVersion2:
                 request_info_room['roomRate'] = room['roomRate']
                 request_info_room['roomsAvailable'] = room['roomsAvailable']
                 request_info_room['childrenExtraCharge'] = room.get('childrenExtraCharge', 0)
+                name_rooms.append(room['roomTypeName'])
 
                 filter_rooms.append(request_info_room.copy())
 
-            return {'success': True, 'rooms': filter_rooms}
+            return {'success': True, 'rooms_type_name': name_rooms, 'rooms': filter_rooms}
 
         self.inner_tokens_check_and_update()
 
