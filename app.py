@@ -8,7 +8,7 @@ contact: ecampbelldsp@gmail.com & ramirezsanchezjosem@gmail.com
 """
 
 from flask import Flask, render_template, jsonify, request
-from src.config import request_guest_and_reservation, request_payment_and_room
+from src.config import request_guest_and_reservation, request_payment_and_room, property_id
 from flask_cors import CORS, cross_origin
 from hd.cam import take_picture
 
@@ -152,13 +152,15 @@ def put_reservation():
 
 @app.route('/postReservation', methods=['POST'])
 def post_reservation():
-    guest_info = request.args.get('guestInfo')
-    room = request.args.get('room')
+    data = request.get_json()
+    guest_info = data.get('guestInfo')
+    room = data.get('room')
 
+    guest_info.update({'propertyID': property_id, 'paymentMethod': 'card'})
     room_info = {'rooms': [{"roomTypeID": room.get('roomTypeID'), "roomRateID": room.get('roomRateID'), "quantity": 1}]}
     adults = {'adults': [{"roomTypeID": room.get('roomTypeID'), "quantity": guest_info.get('adults'), "roomID": ""}]}
-    children = {
-        'children': [{"roomTypeID": room.get('roomTypeID'), "quantity": guest_info.get('children'), "roomID": ""}]}
+    children = {'children': [{"roomTypeID": room.get('roomTypeID'), "quantity": guest_info.get('children'),
+                              "roomID": ""}]}
 
     guest_info.update(room_info)
     guest_info.update(adults)
@@ -183,6 +185,18 @@ def get_guests_info():
 def how_many_guests():
     reservation_id = request.args.get('reservationID', None)
     return request_guest_and_reservation.get_number_of_guests(reservation_id)
+
+
+@app.route('/getAvailableRooms')
+def get_available_rooms():
+    start_date = request.args.get('startDate', None)
+    end_date = request.args.get('endDate', None)
+
+    rooms = request.args.get('rooms', 1)
+    adults = request.args.get('adults', None)
+    children = request.args.get('children', None)
+
+    return request_payment_and_room.get_available_room_types(start_date, end_date, rooms, adults, children)
 
 
 @app.route('/postGuestDocument')
@@ -213,18 +227,6 @@ def post_payment():
     card_type: str = request.args.get('cardType', None)
 
     return request_payment_and_room.post_payment(reservation_id, amount, payment_type, card_type)
-
-
-@app.route('/getAvailableRooms')
-def get_available_rooms():
-    start_date = request.args.get('startDate', None)
-    end_date = request.args.get('endDate', None)
-
-    rooms = request.args.get('rooms', 1)
-    adults = request.args.get('adults', None)
-    children = request.args.get('children', None)
-
-    return request_payment_and_room.get_available_room_types(start_date, end_date, rooms, adults, children)
 
 
 @app.route("/cam")
