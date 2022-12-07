@@ -563,7 +563,7 @@ class RequestVersion2:
         r = requests.get(url + payload, headers=header)
         response = json.loads(r.text, parse_int=str)
 
-        if self.connection_is_success(r) and response['success'] and response['roomCount'] == 0:
+        if self.connection_is_success(r) and response['success'] and response['roomCount'] == '0':
             return {'success': False, 'rooms': None}
 
         elif self.connection_is_success(r) and response['success'] and response['roomCount'] != 0:
