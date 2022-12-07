@@ -1,0 +1,6 @@
+url to get authorization code:
+
+Edward 
+
+https://hotels.cloudbeds.com/api/v1.1/oauth?client_id=live1_212599_LBRQd0lhTFIkJH5GCpwPUOEg&redirect_uri=https://81ee-31-4-128-46.eu.ngrok.io&response_type=code&scope=write:guest read:guest write:reservation read:reservation
+https://hotels.cloudbeds.com/api/v1.1/oauth?client_id=live1_212599_LBRQd0lhTFIkJH5GCpwPUOEg&redirect_uri=https://81ee-31-4-128-46.eu.ngrok.io&response_type=code&scope=read:payment write:payment read:room write:room
