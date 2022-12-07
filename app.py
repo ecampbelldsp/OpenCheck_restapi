@@ -19,6 +19,7 @@ app = Flask(__name__)
 # CORS(app)
 CORS(app)
 
+
 # CORS(app, resources=r'/api/*')
 
 
@@ -99,7 +100,7 @@ def get_reservation():
             reservation_out['roomID'].append(room.get('roomTypeID'))
             reservation_out['roomTypeName'].append(room.get('roomTypeName'))
             # reservation_out['roomID'].append(room.get('roomID'))
-            reservation_out['startDate'].append(room.get('dailyRates')[0]['date'])  #    room.get('startDate')
+            reservation_out['startDate'].append(room.get('dailyRates')[0]['date'])  # room.get('startDate')
             reservation_out['endDate'].append(room.get('dailyRates')[-1]['date'])
             reservation_out['adults'].append(room.get('adults'))
             reservation_out['children'].append(room.get('children'))
@@ -119,7 +120,7 @@ def get_reservation():
             data = reservation_out[key]
             if isinstance(data, list):
                 # data = ['' for d in data if d is None]
-                data_set = set(data) 
+                data_set = set(data)
                 reservation_out[key] = " _ ".join(data_set)
 
         # Invoice reservation info
@@ -200,6 +201,18 @@ def post_payment():
     card_type: str = request.args.get('cardType', None)
 
     return request_payment_and_room.post_payment(reservation_id, amount, payment_type, card_type)
+
+
+@app.route('/getAvailableRooms')
+def get_available_rooms():
+    start_date = request.args.get('startDate', None)
+    end_date = request.args.get('endDate', None)
+
+    rooms = request.args.get('rooms', 1)
+    adults = request.args.get('adults', None)
+    children = request.args.get('children', None)
+
+    return request_payment_and_room.get_available_room_types(start_date, end_date, rooms, adults, children)
 
 
 @app.route("/cam")

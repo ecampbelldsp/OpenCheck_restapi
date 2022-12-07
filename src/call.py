@@ -548,7 +548,7 @@ class RequestVersion2:
                 request_info_room['roomRateID'] = room['roomRateID']
                 request_info_room['roomRate'] = room['roomRate']
                 request_info_room['roomsAvailable'] = room['roomsAvailable']
-                request_info_room['childrenExtraCharge'] = room['childrenExtraCharge']
+                request_info_room['childrenExtraCharge'] = room.get('childrenExtraCharge', 0)
 
                 filter_rooms.append(request_info_room.copy())
 
@@ -564,7 +564,7 @@ class RequestVersion2:
         response = json.loads(r.text, parse_int=str)
 
         if self.connection_is_success(r) and response['success'] and response['roomCount'] == 0:
-            return {'success': False, 'message': 'There are not rooms available of this type.'}
+            return {'success': False, 'rooms': None}
 
         elif self.connection_is_success(r) and response['success'] and response['roomCount'] != 0:
             rooms_available = filter_rooms_available(response['data'][0])

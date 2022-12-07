@@ -8,11 +8,11 @@ redirect_uri = "https://81ee-31-4-128-46.eu.ngrok.io"
 client_secret = 'gwSvTrFauEbt4OkKy1sVGCnB3hpcjf7I'
 
 scope = "write:guest read:guest write:reservation read:reservation"
-code_4_scope_guest_and_reservation = "zYOT9fh8KzU3SgipWid3TZ19SiIfltvm6AKQYvGLFKE"
+code_4_scope_guest_and_reservation = "AqsDRLwBwGwv7np3giiTO_-M0OTgFDW1Q2a0VnBogHc"
 state_4_scope_guest_and_reservation = "fb08f0d2ff44e959fcd83dc20e58a8c0d729cf6f63761f5281799"
 path_tokens = "data/tokens_guests_and_reservation.json"
 
-code_4_scope_payment_and_room = "_R6slRvXp8IQTHcJHgCQworn0dKJ0-kK5_jYsvMAPnQ"
+code_4_scope_payment_and_room = "Ve353z0bQdMp-EmNuyGMwwaQR14OKeDAiKvq21EZ4aw"
 state_4_scope_payment_and_room = "fb08f0d2ff44e959fcd83dc20e58a8c0d729cf6f63761f7e5a84c"
 path_tokens_payment_and_room = "data/tokens_payments_and_room.json"
 
