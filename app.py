@@ -152,7 +152,19 @@ def put_reservation():
 
 @app.route('/postReservation', methods=['POST'])
 def post_reservation():
-    return request_guest_and_reservation.post_reservation(request.json)
+    guest_info = request.args.get('guestInfo')
+    room = request.args.get('room')
+
+    room_info = {'rooms': [{"roomTypeID": room.get('roomTypeID'), "roomRateID": room.get('roomRateID'), "quantity": 1}]}
+    adults = {'adults': [{"roomTypeID": room.get('roomTypeID'), "quantity": guest_info.get('adults'), "roomID": ""}]}
+    children = {
+        'children': [{"roomTypeID": room.get('roomTypeID'), "quantity": guest_info.get('children'), "roomID": ""}]}
+
+    guest_info.update(room_info)
+    guest_info.update(adults)
+    guest_info.update(children)
+
+    return request_guest_and_reservation.post_reservation(guest_info)
 
 
 @app.route('/getReservationInvoiceInformation')
