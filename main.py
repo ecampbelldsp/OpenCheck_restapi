@@ -173,7 +173,7 @@ guest_information = {
     "guestPhone": "4567",
     "rooms": 1,
     "adults": 1,
-    "children": 0,
+    "children": 0
 }
 print(check_in_without_reservation(guest_information))
 
