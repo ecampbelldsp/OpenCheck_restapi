@@ -4,7 +4,7 @@ import requests
 import re
 
 
-class RequestVersion2:
+class requestVersion2:
     def __init__(self, client_id: str, client_secret: str, redirect_uri: str, api_code: str, path_tokens: str):
         self.client_id: str = client_id
         self.client_secret: str = client_secret
@@ -552,7 +552,7 @@ class RequestVersion2:
 
                 filter_rooms.append(request_info_room.copy())
 
-            return {'success': True, 'rooms_type_name': name_rooms, 'rooms': filter_rooms}
+            return {'success': True, 'availableRooms': name_rooms, 'rooms': filter_rooms}
 
         self.inner_tokens_check_and_update()
 
@@ -564,7 +564,7 @@ class RequestVersion2:
         response = json.loads(r.text, parse_int=str)
 
         if self.connection_is_success(r) and response['success'] and response['roomCount'] == '0':
-            return {'success': False, 'rooms': None}
+            return {'success': False, 'rooms': None, 'message': 'There is no rooms available.'}
 
         elif self.connection_is_success(r) and response['success'] and response['roomCount'] != 0:
             rooms_available = filter_rooms_available(response['data'][0])

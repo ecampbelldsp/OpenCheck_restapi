@@ -20,10 +20,10 @@ reservation = {"propertyID": "212599",
                }
 
 # Create the request objects
-request_guest_and_reservation = RequestVersion2(client_id, client_secret, redirect_uri,
+request_guest_and_reservation = requestVersion2(client_id, client_secret, redirect_uri,
                                                 code_4_scope_guest_and_reservation, path_tokens)
 
-request_payment_and_room = RequestVersion2(client_id, client_secret, redirect_uri,
+request_payment_and_room = requestVersion2(client_id, client_secret, redirect_uri,
                                            code_4_scope_payment_and_room, path_tokens_payment_and_room)
 
 
@@ -143,7 +143,7 @@ def check_in_without_reservation(guest_info):
         return available_rooms
 
 
-def check_out(_reservation_id: str, _request_guest_and_reservation: RequestVersion2, _request_payment_and_room: RequestVersion2):
+def check_out(_reservation_id: str, _request_guest_and_reservation: requestVersion2, _request_payment_and_room: requestVersion2):
     r = request_guest_and_reservation.get_reservation(reservation_id)
 
     if _request_guest_and_reservation.reservation_is_paid(reservation_id):

@@ -1,4 +1,4 @@
-from src.call import RequestVersion2
+from src.call import requestVersion2
 
 # Config State
 property_id = '212599'
@@ -26,9 +26,9 @@ guest_docu_path = ["data/passport.png", "data/passport.png"]
 reservation_docu_path = ["data/Travel-Request-Form-Template.pdf"]
 
 # Create the request objects
-request_guest_and_reservation = RequestVersion2(client_id, client_secret, redirect_uri,
+request_guest_and_reservation = requestVersion2(client_id, client_secret, redirect_uri,
                                                 code_4_scope_guest_and_reservation,
                                                 path_tokens)
 
-request_payment_and_room = RequestVersion2(client_id, client_secret, redirect_uri, code_4_scope_payment_and_room,
+request_payment_and_room = requestVersion2(client_id, client_secret, redirect_uri, code_4_scope_payment_and_room,
                                            path_tokens_payment_and_room)
