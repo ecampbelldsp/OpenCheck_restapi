@@ -564,7 +564,7 @@ class requestVersion2:
         response = json.loads(r.text, parse_int=str)
 
         if self.connection_is_success(r) and response['success'] and response['roomCount'] == '0':
-            return {'success': False, 'rooms': None, 'message': 'There is no rooms available.'}
+            return {'success': False, 'availableRooms': None, 'rooms': None, 'message': 'There is no rooms available.'}
 
         elif self.connection_is_success(r) and response['success'] and response['roomCount'] != 0:
             rooms_available = filter_rooms_available(response['data'][0])
