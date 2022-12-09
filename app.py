@@ -154,7 +154,7 @@ def put_reservation():
 def post_reservation():
     data = request.get_json()
     guest_info = data.get('guestInfo')
-    room = data.get('rooms')
+    room = data.get('rooms')[0]
 
     guest_info.update({'propertyID': property_id, 'paymentMethod': 'card'})
     room_info = {'rooms': [{"roomTypeID": room.get('roomTypeID'), "roomRateID": room.get('roomRateID'), "quantity": 1}]}
