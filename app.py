@@ -156,6 +156,9 @@ def post_reservation():
     guest_info = data.get('guestInfo')
     room = data.get('rooms')[0]
 
+    room['guestCountry'] = 'US'
+    # TODO Adding a map to cast country names to Cloudbed's standard
+
     guest_info.update({'propertyID': property_id, 'paymentMethod': 'card'})
     room_info = {'rooms': [{"roomTypeID": room.get('roomTypeID'), "roomRateID": room.get('roomRateID'), "quantity": 1}]}
     adults = {'adults': [{"roomTypeID": room.get('roomTypeID'), "quantity": guest_info.get('adults'), "roomID": ""}]}
