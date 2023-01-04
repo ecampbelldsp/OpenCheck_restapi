@@ -264,7 +264,10 @@ class requestVersion2:
         reservation_transformed = edit_reservation_for_api(reservation)
 
         response_in_json = self.basic_request(r_type, url, header=header, payload=reservation_transformed)
-        return response_in_json
+        if response_in_json.get('success') == 'false':
+            return response_in_json
+        else:
+            return {'success': True, 'reservationID': response_in_json.get('reservationID')}
 
     def post_reservation_document(self, reservation_id: str, document_path: str):
         """
