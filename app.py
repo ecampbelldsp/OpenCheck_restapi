@@ -7,6 +7,7 @@ Created on  19/8/22 14:17
 contact: ecampbelldsp@gmail.com & ramirezsanchezjosem@gmail.com
 """
 
+import country_converter as coco
 from flask import Flask, render_template, jsonify, request
 from src.config import request_guest_and_reservation, request_payment_and_room, property_id
 from flask_cors import CORS, cross_origin
@@ -154,12 +155,20 @@ def put_reservation():
 def post_reservation():
     data = request.get_json()
     guest_info = data.get('guestInfo')
-    room = data.get('rooms')
+    room = data.get('rooms')[0]
 
-    guest_info.update({'propertyID': property_id, 'paymentMethod': 'card'})
-    room_info = {'rooms': [{"roomTypeID": room.get('roomTypeID'), "roomRateID": room.get('roomRateID'), "quantity": 1}]}
-    adults = {'adults': [{"roomTypeID": room.get('roomTypeID'), "quantity": guest_info.get('adults'), "roomID": ""}]}
-    children = {'children': [{"roomTypeID": room.get('roomTypeID'), "quantity": guest_info.get('children'),
+    # Update some reservation's values.
+    guest_country_iso2 = coco.convert(names=guest_info['guestCountry'], to='ISO2')
+    guest_info.update({'propertyID': property_id, 'paymentMethod': 'card', 'guestCountry': guest_country_iso2})
+
+    room_info = {'rooms': [{"roomTypeID": room.get('roomTypeID'),
+                            "roomRateID": room.get('roomRateID'),
+                            "quantity": 1}]}
+    adults = {'adults': [{"roomTypeID": room.get('roomTypeID'),
+                          "quantity": guest_info.get('adults'),
+                          "roomID": ""}]}
+    children = {'children': [{"roomTypeID": room.get('roomTypeID'),
+                              "quantity": guest_info.get('children'),
                               "roomID": ""}]}
 
     guest_info.update(room_info)
