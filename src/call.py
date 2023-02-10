@@ -3,6 +3,8 @@ import os.path
 import requests
 import re
 
+from flask import jsonify
+
 
 class requestVersion2:
     def __init__(self, client_id: str, client_secret: str, redirect_uri: str, api_code: str, path_tokens: str):
@@ -216,7 +218,7 @@ class requestVersion2:
             Useful function to transform the json form of a reservation to a valid format for CloudBeds API.
             The transformation consists makes a text plain entry of each index in the arrays: rooms, adults and children
 
-            :param reservation_json:
+            :param reservation_json: The json form of a reservation
             :return: reservation in the proper format of CloudBeds.
             """
 
@@ -350,12 +352,15 @@ class requestVersion2:
         """
 
         reservation = self.get_reservation(reservation_id)
-        return len(reservation['data']['guestList'])
+        if reservation['success'] == 'true':
+            return jsonify({'success': 'true', 'numberOfGuests': len(reservation['data']['guestList'])})
+        else:
+            return jsonify({'success': 'false', 'message': reservation['message']})
 
     def get_guest_info_in_reservation(self, reservation_id):
         """
         Get the information of all the guests in a reservation.
-        :param reservation_id:
+        :param reservation_id: The reservation ID of the reservation.
         :return: List with all the guests' information.
         """
 
@@ -384,12 +389,14 @@ class requestVersion2:
         guest = []
         reservation = self.get_reservation(reservation_id)
 
-        guests_dict = reservation['data']['guestList']
-        for guest_id in guests_dict.keys():
-            guest_all_data = guests_dict[guest_id]
-            guest.append(filter_guest_info(guest_all_data))
-
-        return guest
+        if reservation['success'] == 'true':
+            guests_dict = reservation['data']['guestList']
+            for guest_id in guests_dict.keys():
+                guest_all_data = guests_dict[guest_id]
+                guest.append(filter_guest_info(guest_all_data))
+            return jsonify(guest)
+        else:
+            return jsonify({"success": "false", "message": reservation['message']})
 
     # Payment
     def get_payment_methods(self):

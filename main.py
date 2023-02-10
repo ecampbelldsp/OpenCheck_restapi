@@ -19,7 +19,7 @@ reservation = {"propertyID": "212599",
                "children": r_children
                }
 
-# Create the request objects
+# Create the request scope objects
 request_guest_and_reservation = requestVersion2(client_id, client_secret, redirect_uri,
                                                 code_4_scope_guest_and_reservation, path_tokens)
 
@@ -155,11 +155,11 @@ def check_out(_reservation_id: str, _request_guest_and_reservation: requestVersi
         print(_request_payment_and_room.post_payment(_reservation_id, balance, 'credit', 'master'))
 
 
-# request_guest_and_reservation.invoice_detailed(reservation_id)
-#
-# # Flow Check-In with reservation ID.
-# check_in_with_reservation(reservation_id, request_guest_and_reservation, request_payment_and_room, guest_docu_path,
-#                           reservation_docu_path)
+request_guest_and_reservation.invoice_detailed(reservation_id)
+
+# Flow Check-In with reservation ID.
+check_in_with_reservation(reservation_id, request_guest_and_reservation, request_payment_and_room, guest_docu_path,
+                          reservation_docu_path)
 
 # Flow Check-In without reservation ID.
 guest_information = {
