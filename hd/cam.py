@@ -14,17 +14,19 @@ from datetime import datetime
 
 def take_picture() -> dict:
 
-    with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
-        try:
-            cam = cv2.VideoCapture(1)
+    with open("/tmp/photo.png", "w") as tmp:
 
+        for device in range(-1, 10):
+
+            cam = cv2.VideoCapture(device)
             ret, image = cam.read()
-            cv2.imwrite(tmp.name, image)
 
-            cam.release()
-            cv2.destroyAllWindows()
+            if image is None:
+                cam.release()
+                cv2.destroyAllWindows()
+                continue
+            else:
+                cv2.imwrite(tmp.name, image)
+                return {"success": "true", "path": tmp.name}
 
-            return {"success": "true", "path": "data/photo/picture.png"}
-        except Exception as e:
-            return {"success": "false", "message": f"Hardware error on the WEBCAM occurs: {e}", "path": ""}
-        B
+        return {"success": "false", "message": f"Hardware error on the WEBCAM occurs: {e}", "path": ""}
