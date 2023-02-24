@@ -180,12 +180,24 @@ def post_reservation():
 
 @app.route('/getReservationInvoiceInformation')
 def get_reservation_invoice_information():
+    def post_processing_reservation_invoice_information(json):
+        """
+        Post-processing stage for Frontend.
+        :param json: a reservation's invoice information in json format.
+        :return: a filtered invoice information (balance, paid, grandTotal, etc) in json format.
+        """
+        reservation_out = {}
+        reservation_out['success'] = 'true'
+        reservation_out['paid'] = json['paid']
+        reservation_out['total'] = json['grandTotal']
+        reservation_out['balance'] = float(json['grandTotal']) - float(json['paid'])
+        reservation_out['paidStatus'] = 'false' if reservation_out['balance'] > 0 else 'true'
+        return reservation_out
+
     reservation_id = request.args.get('reservationID', None)
     full_invoce = request_guest_and_reservation.get_reservation_invoice_information(reservation_id)
     if full_invoce['success'] != 'false':
-        detailed_invoice = full_invoce.get('data').get('balanceDetailed')
-        detailed_invoice['balace'] = float(detailed_invoice['grandTotal']) - float(detailed_invoice['paid'])
-        return detailed_invoice
+        return post_processing_reservation_invoice_information(full_invoce.get('data').get('balanceDetailed'))
     else:
         return full_invoce
 
