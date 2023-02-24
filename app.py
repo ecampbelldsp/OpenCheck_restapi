@@ -124,6 +124,15 @@ def get_reservation():
                 data_set = set(data)
                 reservation_out[key] = " _ ".join(data_set)
 
+        # Reformatting date tipe from YYYY-MM-DD to DD-MM-YYYY
+        for key in ['startDate', 'endDate']:
+            data = reservation_out[key]
+            data = data.split('_')
+            data = [d.split('-')[::-1] for d in data]
+            data = ['-'.join(d) for d in data]
+            data = ' _ '.join(data)
+            reservation_out[key] = data
+
         # Invoice reservation info
         total = json['balanceDetailed']['grandTotal']
         paid = json['balanceDetailed']['paid']
