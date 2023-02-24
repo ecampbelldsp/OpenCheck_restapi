@@ -181,7 +181,14 @@ def post_reservation():
 @app.route('/getReservationInvoiceInformation')
 def get_reservation_invoice_information():
     reservation_id = request.args.get('reservationID', None)
-    return request_guest_and_reservation.get_reservation_invoice_information(reservation_id)
+    full_invoce = request_guest_and_reservation.get_reservation_invoice_information(reservation_id)
+    if full_invoce['success'] != 'false':
+        detailed_invoice = full_invoce.get('data').get('balanceDetailed')
+        detailed_invoice['balace'] = float(detailed_invoice['grandTotal']) - float(detailed_invoice['paid'])
+        return detailed_invoice
+    else:
+        return full_invoce
+
 
 
 @app.route('/getGuestsInformation')

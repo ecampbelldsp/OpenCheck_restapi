@@ -307,6 +307,8 @@ class requestVersion2:
 
         if self.connection_is_success(r):
             return response_in_json
+        else:
+            return {'success': False, 'message': response_in_json.get('message')}
 
     def reservation_is_paid(self, reservation_id):
         all_invoice_data = self.get_reservation_invoice_information(reservation_id)
