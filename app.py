@@ -6,15 +6,22 @@ Created on  19/8/22 14:17
 @author: Edward L. Campbell Hernández & José M. Ramírez
 contact: ecampbelldsp@gmail.com & ramirezsanchezjosem@gmail.com
 """
-from flask import Flask, render_template, jsonify, request
-from flask_cors import CORS
 
-from datetime import datetime
+import country_converter as coco
+from flask import Flask, render_template, jsonify, request
+from src.config import request_guest_and_reservation, request_payment_and_room, property_id
+from flask_cors import CORS, cross_origin
 from hd.cam import take_picture
-from src.config import request_guest_and_reservation, request_payment_and_room
 
 app = Flask(__name__)
+
+# app.config['CORS_HEADERS'] = 'Content-Type'
+
+# CORS(app)
 CORS(app)
+
+
+# CORS(app, resources=r'/api/*')
 
 
 @app.route('/')
@@ -29,235 +36,175 @@ def ping():
 
 @app.route('/getReservation')
 def get_reservation():
-    """
-    Get the reservation information. It is necessary a reservation_id.
-    :return: a json with the reservation information.
-    """
+    def post_processing_reservation(json: dict):
+
+        reservation_out = {
+            "reservationID": json.get("reservationID"),
+            "guestName": json.get("guestName"),
+            "guestEmail": json.get("guestEmail"),
+            "guestID": "",
+            "guestFirstName": "",
+            "guestLastName": "",
+            "guestCellPhone": "",
+            "guestAddress1": "",
+            "guestCity": "",
+            "guestCountry": "",
+            "guestState": "",
+            "guestZip": "",
+            "guestBirthDate": "",
+            "guestDocumentType": "",
+            "guestDocumentNumber": "",
+            "guestDocumentIssueDate": "",
+            "guestDocumentIssuingCountry": "",
+            "guestDocumentExpirationDate": "",
+            "roomTypeID": [],
+            "roomTypeName": [],
+            "roomID": [],
+            "startDate": [],
+            "endDate": [],
+            "adults": [],
+            "children": [],
+            "paid": "",
+            "balance": "",
+            "paidStatus": "",
+        }
+
+        # Guests reservation info
+        guests_info = json['guestList']
+        for guest_id in guests_info.keys():
+            guest_data = guests_info[guest_id]
+
+            if guest_data['guestFirstName'] in reservation_out['guestName'] and \
+                    guest_data['guestLastName'] in reservation_out['guestName']:
+                reservation_out['guestID'] = guest_data['guestID']
+                reservation_out['guestFirstName'] = guest_data['guestFirstName']
+                reservation_out['guestLastName'] = guest_data['guestLastName']
+                reservation_out['guestGender'] = guest_data['guestGender']
+                reservation_out['guestEmail'] = guest_data['guestEmail']
+                reservation_out['guestPhone'] = guest_data['guestPhone']
+                reservation_out['guestCellPhone'] = guest_data['guestCellPhone']
+                reservation_out['guestCountry'] = guest_data['guestCountry']
+                reservation_out['guestAddress'] = guest_data['guestAddress']
+                reservation_out['guestCity'] = guest_data['guestCity']
+                reservation_out['guestZip'] = guest_data['guestZip']
+                reservation_out['guestState'] = guest_data['guestState']
+                reservation_out['guestBirthdate'] = guest_data['guestBirthdate']
+                reservation_out['guestDocumentType'] = guest_data['guestDocumentType']
+                reservation_out['guestDocumentNumber'] = guest_data['guestDocumentNumber']
+                reservation_out['guestDocumentIssueDate'] = guest_data['guestDocumentIssueDate']
+                reservation_out['guestDocumentExpirationDate'] = guest_data['guestDocumentExpirationDate']
+                reservation_out['guestDocumentIssuingCountry'] = guest_data['guestDocumentIssuingCountry']
+
+        # Room reservation info
+        for room in json['unassigned']:
+            # reservation_out['roomID'].append(room.get('roomID'))
+            reservation_out['roomID'].append(room.get('roomTypeID'))
+            reservation_out['roomTypeName'].append(room.get('roomTypeName'))
+            # reservation_out['roomID'].append(room.get('roomID'))
+            reservation_out['startDate'].append(room.get('dailyRates')[0]['date'])  # room.get('startDate')
+            reservation_out['endDate'].append(room.get('dailyRates')[-1]['date'])
+            reservation_out['adults'].append(room.get('adults'))
+            reservation_out['children'].append(room.get('children'))
+
+        for room in json['assigned']:
+            # reservation_out['roomID'].append(room.get('roomID'))
+            reservation_out['roomID'].append(room.get('roomTypeID'))
+            reservation_out['roomTypeName'].append(room.get('roomTypeName'))
+            # reservation_out['roomID'].append(room.get('roomID'))
+            reservation_out['startDate'].append(room.get('dailyRates')[0]['date'])
+            reservation_out['endDate'].append(room.get('dailyRates')[-1]['date'])
+            reservation_out['adults'].append(room.get('adults'))
+            reservation_out['children'].append(room.get('children'))
+
+        # Pre-processing stage for Frontend
+        for key in reservation_out.keys():
+            data = reservation_out[key]
+            if isinstance(data, list):
+                # data = ['' for d in data if d is None]
+                data_set = set(data)
+                reservation_out[key] = " _ ".join(data_set)
+
+        # Invoice reservation info
+        total = json['balanceDetailed']['grandTotal']
+        paid = json['balanceDetailed']['paid']
+        balance = float(total) - float(paid)
+
+        reservation_out["paid"] = paid
+        reservation_out["total"] = total
+        reservation_out["balance"] = "0" if balance < 0 else f"{balance}"
+
+        reservation_out["paidStatus"] = "false" if balance > 0 else "true"
+
+        return {"success": "true", "data": reservation_out}
 
     reservation_id = request.args.get('reservationID', None)
-    if reservation_id is None:
-        return jsonify({"success": "false", "message": "Missing the reservation identifier."})
-    else:
-        return jsonify({"data":
-                            {"adults": "1",
-                             "balance": "1125.0",
-                             "children": "0",
-                             "endDate": "05-10-2022",
-                             "guestAddress": "Rue da Torre 1",
-                             "guestAddress1": "Rue da Torre 1, Piso 1ro, Puerta 1",
-                             "guestBirthDate": "17-12-1990",
-                             "guestCellPhone": "+346854589",
-                             "guestCity": "Vigo",
-                             "guestCountry": "ES",
-                             "guestDocumentExpirationDate": "1-01-2029",
-                             "guestDocumentIssueDate": "1-01-2019",
-                             "guestDocumentIssuingCountry": "ES",
-                             "guestDocumentNumber": "K81231",
-                             "guestDocumentType": "Passport",
-                             "guestEmail": "eduardog90@gmail.com",
-                             "guestFirstName": "Eduardo",
-                             "guestGender": "M",
-                             "guestID": "58817062",
-                             "guestLastName": "García",
-                             "guestName": "Eduardo García",
-                             "guestPhone": "+346854589",
-                             "guestState": "Pontevedra",
-                             "guestZip": "36001",
-                             "paid": "0",
-                             "paidStatus": "false",
-                             "reservationID": "4442365621388",
-                             "roomID": "409037",
-                             "roomTypeID": "",
-                             "roomTypeName": "Deluxe King",
-                             "startDate": "01-10-2022",
-                             "total": "1125"
-                             },
-                        "success": "true"})
+    response_in_json = request_guest_and_reservation.get_reservation(reservation_id)
+
+    open_check_reservation = post_processing_reservation(response_in_json['data'])
+    return open_check_reservation
 
 
 @app.route('/putReservation', methods=['PUT'])
 def put_reservation():
-    """
-    Updates a reservation, such as custom fields, estimated arrival time, room configuration and reservation status.
-    It is necessary: a reservation_id and the reservation status.
-    :return: Returns the reservation data as defined by getReservation call or an error with details in 'message'.
-    """
     reservation_id = request.args.get('reservationID', None)
     status = request.args.get('status', None)
-
-    if reservation_id is None:
-        return jsonify({"success": "false", "message": "Missing reservationID"})
-    elif status not in ['confirmed', 'not_confirmed', 'canceled', 'checked_in', 'checked_out', 'no_show']:
-        return jsonify({'success': 'False',
-                        'message': 'Reservation Status is not a valid status. Please check the value'})
-    else:
-        return jsonify({"data": {
-            "adults": "1",
-            "balance": "1125.0",
-            "children": "0",
-            "endDate": "05-10-2022",
-            "guestAddress": "Rue da Torre 1",
-            "guestAddress1": "Rue da Torre 1, Piso 1ro, Puerta 1",
-            "guestBirthDate": "17-12-1990",
-            "guestCellPhone": "+346854589",
-            "guestCity": "Vigo",
-            "guestCountry": "ES",
-            "guestDocumentExpirationDate": "1-01-2029",
-            "guestDocumentIssueDate": "1-01-2019",
-            "guestDocumentIssuingCountry": "ES",
-            "guestDocumentNumber": "K81231",
-            "guestDocumentType": "Passport",
-            "guestEmail": "eduardog90@gmail.com",
-            "guestFirstName": "Eduardo",
-            "guestGender": "M",
-            "guestID": "58817062",
-            "guestLastName": "García",
-            "guestName": "Eduardo García",
-            "guestPhone": "+346854589",
-            "guestState": "Pontevedra",
-            "guestZip": "36001",
-            "paid": "0",
-            "paidStatus": "false",
-            "reservationID": "4442365621388",
-            "roomID": "409037",
-            "roomTypeID": "",
-            "roomTypeName": "Deluxe King",
-            "startDate": "01-10-2022",
-            "total": "1125"
-        }, "success": "true"})
+    return request_guest_and_reservation.put_reservation(reservation_id, status)
 
 
 @app.route('/postReservation', methods=['POST'])
 def post_reservation():
-    """
-    Creates a new reservation. It is necessary a JSON with the reservation data.
-    :return: The reservationId of the reservation created.
-    """
-    return {'success': True, 'reservationID': '4442365621388'}
+    data = request.get_json()
+    guest_info = data.get('guestInfo')
+    room = data.get('rooms')[0]
+
+    # Update some reservation's values.
+    guest_country_iso2 = coco.convert(names=guest_info['guestCountry'], to='ISO2')
+    guest_info.update({'propertyID': property_id, 'paymentMethod': 'card', 'guestCountry': guest_country_iso2})
+
+    room_info = {'rooms': [{"roomTypeID": room.get('roomTypeID'),
+                            "roomRateID": room.get('roomRateID'),
+                            "quantity": 1}]}
+    adults = {'adults': [{"roomTypeID": room.get('roomTypeID'),
+                          "quantity": guest_info.get('adults'),
+                          "roomID": ""}]}
+    children = {'children': [{"roomTypeID": room.get('roomTypeID'),
+                              "quantity": guest_info.get('children'),
+                              "roomID": ""}]}
+
+    guest_info.update(room_info)
+    guest_info.update(adults)
+    guest_info.update(children)
+
+    return request_guest_and_reservation.post_reservation(guest_info)
 
 
 @app.route('/getReservationInvoiceInformation')
 def get_reservation_invoice_information():
-    """
-    Given a reservation id it gets the invoice information of a reservation (payments, balance, total, taxes)
-    :return: The invoice information of a reservation.
-    """
     reservation_id = request.args.get('reservationID', None)
-    if reservation_id is None:
-        return jsonify({"success": "false", "message": "Missing the reservation identifier."})
+    full_invoce = request_guest_and_reservation.get_reservation_invoice_information(reservation_id)
+    if full_invoce['success'] != 'false':
+        detailed_invoice = full_invoce.get('data').get('balanceDetailed')
+        detailed_invoice['balace'] = float(detailed_invoice['grandTotal']) - float(detailed_invoice['paid'])
+        return detailed_invoice
     else:
-        return jsonify({"data": {
-            "balance": "1125",
-            "balanceDetailed": {
-                "additionalItems": "0",
-                "grandTotal": "1125",
-                "paid": "0",
-                "subTotal": "1125",
-                "suggestedDeposit": "225",
-                "taxesFees": "0"
-            },
-            "customFields": [],
-            "mainGuestDetails": {
-                "companyName": "",
-                "companyTaxID": "",
-                "guestAddress": "",
-                "guestAddress2": "",
-                "guestCellPhone": "",
-                "guestCity": "",
-                "guestCountry": "ES",
-                "guestEmail": "ecampbelldsp@gmail.com",
-                "guestFirstName": "Edward L.",
-                "guestGender": "M",
-                "guestLastName": "Campbell",
-                "guestPhone": "",
-                "guestState": "",
-                "guestZip": "",
-                "isAnonymized": "false",
-                "taxID": ""
-            },
-            "reservationAddOnProducts": [],
-            "reservationAddOnProductsTotal": "0",
-            "reservationAdditionalProducts": [],
-            "reservationAdditionalProductsTotal": "0",
-            "reservationAdjustments": [],
-            "reservationAdjustmentsTotal": "0",
-            "reservationFees": [],
-            "reservationFeesTotal": "0",
-            "reservationPayments": [],
-            "reservationPaymentsTotal": "0",
-            "reservationRooms": [{
-                "adults": "1",
-                "children": "0",
-                "endDate": "2022-10-06",
-                "guestName": "Edward L. Campbell",
-                "isAnonymized": "false",
-                "nights": "5",
-                "roomID": 'null',
-                "roomName": "N/A",
-                "roomTotal": "1125",
-                "roomTypeID": "409037",
-                "roomTypeName": "DLK",
-                "startDate": "2022-10-01"
-            }],
-            "reservationRoomsTotal": "1125",
-            "reservationTaxes": [],
-            "reservationTaxesTotal": "0",
-            "status": "no_show"
-        },
-            "success": "true"})
+        return full_invoce
+
 
 
 @app.route('/getGuestsInformation')
 def get_guests_info():
-    """
-    Given a reservation id it gets all the guest in the reservation and they data.
-    :return: The guests data in a reservation
-    """
     reservation_id = request.args.get('reservationID', None)
-    if reservation_id is None:
-        return jsonify({"success": "false", "message": "Missing the reservation identifier."})
-    else:
-        return jsonify([{
-            "guestAddress": "",
-            "guestBirthdate": "",
-            "guestCellPhone": "",
-            "guestCity": "",
-            "guestCountry": "ES",
-            "guestDocumentExpirationDate": "",
-            "guestDocumentIssueDate": "",
-            "guestDocumentIssuingCountry": "",
-            "guestDocumentNumber": "",
-            "guestDocumentType": "",
-            "guestEmail": "ecampbelldsp@gmail.com",
-            "guestFirstName": "Edward L.",
-            "guestGender": "M",
-            "guestID": "58817062",
-            "guestLastName": "Campbell",
-            "guestPhone": "",
-            "guestState": "",
-            "guestZip": ""
-        }])
+    return request_guest_and_reservation.get_guest_info_in_reservation(reservation_id)
 
 
 @app.route('/getNumberOfGuests')
 def how_many_guests():
-    """
-    Given a reservation id it gets the total of getss in the reservation
-    :return: Total of guests in the reservation
-    """
     reservation_id = request.args.get('reservationID', None)
-    if reservation_id is None:
-        return jsonify({"success": "false", "message": "Missing the reservation identifier."})
-    else:
-        return jsonify({"success": "true", "numberOfGuests": 1})
+    return request_guest_and_reservation.get_number_of_guests(reservation_id)
 
 
 @app.route('/getAvailableRooms')
 def get_available_rooms():
-    """
-    It gets the available rooms given a startDate, endDate, and the number of guests.
-    :return: A list with the room types that are available
-    """
     start_date = request.args.get('startDate', None)
     end_date = request.args.get('endDate', None)
 
@@ -265,182 +212,31 @@ def get_available_rooms():
     adults = request.args.get('adults', None)
     children = request.args.get('children', None)
 
-    if start_date is None or end_date is None or rooms is None or adults is None or children is None:
-        return jsonify({"success": "false", "message": "Missing reservation data."})
-    if not datetime.strptime(start_date, '%Y-%m-%d').date() > datetime.today().date():
-        return jsonify({"success": "false", "message": "The start date must be greater than today."})
-    elif not datetime.strptime(end_date, '%Y-%m-%d').date() > datetime.strptime(start_date, '%Y-%m-%d').date():
-        return jsonify({"success": "false", "message": "The end date must be greater than the start date."})
-    elif int(rooms) < 1:
-        return jsonify({"success": "false", "message": "The number of rooms must be greater than 0."})
-    elif int(adults) < 1:
-        return jsonify({"success": "false", "message": "The number of adults must be greater than 0."})
-    elif int(children) < 0:
-        return jsonify({"success": "false", "message": "The number of children must be greater or equal than 0."})
-    else:
-        return jsonify({
-            "availableRooms": [
-                "Deluxe Queen",
-                "Deluxe King",
-                "Standard"
-            ],
-            "rooms": [{
-                "adultsIncluded": "2",
-                "childrenExtraCharge": {
-                    "2": "15",
-                    "3": "215"
-                },
-                "childrenIncluded": "1",
-                "maxGuests": "4",
-                "roomRate": "5",
-                "roomRateID": "1185538",
-                "roomTypeDescription": "Deluxe Queen room.",
-                "roomTypeFeatures": [
-                    "Batas de Baño",
-                    "Televisión por cable (cargo)",
-                    "Microondas"
-                ],
-                "roomTypeID": "409036",
-                "roomTypeName": "Deluxe Queen",
-                "roomTypeNameShort": "DLQ",
-                "roomsAvailable": "1"
-            }, {
-                "adultsIncluded": "2",
-                "childrenExtraCharge": {
-                    "1": "100"
-                },
-                "childrenIncluded": "0",
-                "maxGuests": "2",
-                "roomRate": "5",
-                "roomRateID": "1185539",
-                "roomTypeDescription": "Deluxe King room",
-                "roomTypeFeatures": [
-                    "Batas de Baño",
-                    "Televisión por cable (cargo)",
-                    "Microondas",
-                    "Minibar"
-                ],
-                "roomTypeID": "409037",
-                "roomTypeName": "Deluxe King",
-                "roomTypeNameShort": "DLK",
-                "roomsAvailable": "1"
-            }, {
-                "adultsIncluded": "1",
-                "childrenExtraCharge": {
-                    "1": "100",
-                    "10": "715",
-                    "11": "715",
-                    "12": "715",
-                    "13": "715",
-                    "14": "715",
-                    "15": "715",
-                    "16": "715",
-                    "17": "715",
-                    "18": "715",
-                    "19": "715",
-                    "2": "115",
-                    "3": "315",
-                    "4": "365",
-                    "5": "465",
-                    "6": "715",
-                    "7": "715",
-                    "8": "715",
-                    "9": "715"
-                },
-                "childrenIncluded": "0",
-                "maxGuests": "20",
-                "roomRate": "5",
-                "roomRateID": "1300448",
-                "roomTypeDescription": "Disfrute su estancia",
-                "roomTypeFeatures": [
-                    "Batas de Baño",
-                    "Cunas (previa solicitud)",
-                    "Zapatillas",
-                    "Tensión 110-127 voltios",
-                    "Tensión 220-240 voltios",
-                    "Aire Condicionado",
-                    "Televisión por cable",
-                    "Televisión por cable (cargo)",
-                    "Ventiladores de Techo",
-                    "Cafetera",
-                    "Secador de Cabello",
-                    "Sonido para iPod",
-                    "Internet por cable",
-                    "Internet por cable (cargo)",
-                    "Microondas",
-                    "Minibar",
-                    "Rádio AM / FM",
-                    "Internet inalámbrico (WiFi)",
-                    "Internet inalámbrico (WiFi) - cargo"
-                ],
-                "roomTypeID": "438571",
-                "roomTypeName": "Standard",
-                "roomTypeNameShort": "DEL",
-                "roomsAvailable": "1"
-            }],
-            "success": "true"
-        })
+    return request_payment_and_room.get_available_room_types(start_date, end_date, rooms, adults, children)
 
 
 @app.route('/postGuestDocument')
 def post_guest_document():
-    """
-    Upload a guest document using the guest id.
-    :return: a confirmation message and the document id assigned by the PMS
-    """
     guest_id = request.args.get('guestID', None)
     path_to_document = request.args.get('pathDocument', None)
-
-    if guest_id is None or path_to_document is None:
-        return jsonify({"success": "false", "message": "Missing the guest identifier or the path to the doc."})
-    else:
-        return jsonify({
-            "data": {
-                "fileID": "23706119"
-            },
-            "success": 'true'
-        })
+    return request_guest_and_reservation.post_guest_document(guest_id, path_to_document)
 
 
 @app.route('/postReservationDocument')
 def post_reservation_document():
-    """
-    Upload a guest document using the reservation id.
-    :return: a confirmation message and the document id assigned by the PMS
-    """
     reservation_id = request.args.get('reservationID', None)
     path_to_document = request.args.get('pathDocument', None)
-
-    if reservation_id is None or path_to_document is None:
-        return jsonify({"success": "false", "message": "Missing the reservation identifier or the path to the doc."})
-    else:
-        return jsonify({
-            "data": {
-                "fileID": "23706119"
-            },
-            "success": 'true'
-        })
+    return request_guest_and_reservation.post_guest_document(reservation_id, path_to_document)
 
 
 @app.route('/reservationIsPaid')
 def reservation_is_paid():
-    """
-    Given a reservation id it checks if the reservation is paid.
-    :return: a message with a boolean variable paidStatus.
-    """
     reservation_id = request.args.get('reservationID', None)
-    if reservation_id is None:
-        return jsonify({"success": "false", "message": "Missing the reservation identifier."})
-    else:
-        return jsonify({"success": "true", "paidStatus": "false"})
+    return request_guest_and_reservation.reservation_is_paid(reservation_id)
 
 
 @app.route('/postPayment')
 def post_payment():
-    """
-    Upload a payment into a reservation given the reservation id, the amount, and the card type
-    :return: a confirmation message.
-    """
     reservation_id = request.args.get('reservationID', None)
     amount = request.args.get('amount', None)
     payment_type = request.args.get('type', 'card')
@@ -451,12 +247,8 @@ def post_payment():
 
 @app.route("/cam")
 def picture():
-    """
-    Take a picture using the webcam.
-    :return:
-    """
-    response = take_picture()
-    return jsonify(response)
+    flag = take_picture()
+    return flag
 
 
 if __name__ == '__main__':
