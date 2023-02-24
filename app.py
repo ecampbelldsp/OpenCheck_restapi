@@ -160,7 +160,7 @@ def post_reservation():
     # Update some reservation's values.
     guest_country_iso2 = coco.convert(names=guest_info['guestCountry'], to='ISO2')
     guest_info.update({'propertyID': property_id, 'paymentMethod': 'card', 'guestCountry': guest_country_iso2})
-
+    # Fill the room's values.
     room_info = {'rooms': [{"roomTypeID": room.get('roomTypeID'),
                             "roomRateID": room.get('roomRateID'),
                             "quantity": 1}]}
@@ -170,7 +170,7 @@ def post_reservation():
     children = {'children': [{"roomTypeID": room.get('roomTypeID'),
                               "quantity": guest_info.get('children'),
                               "roomID": ""}]}
-
+    # Merge all data.
     guest_info.update(room_info)
     guest_info.update(adults)
     guest_info.update(children)
@@ -180,6 +180,10 @@ def post_reservation():
 
 @app.route('/getReservationInvoiceInformation')
 def get_reservation_invoice_information():
+    """
+    Get reservation invoice information.
+    :return: a json with a reservation invoice information filtered.
+    """
     def post_processing_reservation_invoice_information(json):
         """
         Post-processing stage for Frontend.
@@ -200,7 +204,6 @@ def get_reservation_invoice_information():
         return post_processing_reservation_invoice_information(full_invoce.get('data').get('balanceDetailed'))
     else:
         return full_invoce
-
 
 
 @app.route('/getGuestsInformation')

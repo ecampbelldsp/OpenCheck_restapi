@@ -1,11 +1,21 @@
 import json
 import os.path
+from typing import Tuple
+
 import requests
 import re
 
 
 class requestVersion2:
     def __init__(self, client_id: str, client_secret: str, redirect_uri: str, api_code: str, path_tokens: str):
+        """
+        Constructor of the class requestVersion2 that will be used to make the requests to the API.
+        :param client_id: hotel client id
+        :param client_secret: hotel secret id
+        :param redirect_uri: uri to redirect the user after the authorization
+        :param api_code: hotel code to make the requests
+        :param path_tokens: path to the tokens.json file
+        """
         self.client_id: str = client_id
         self.client_secret: str = client_secret
         self.redirect_uri: str = redirect_uri
@@ -26,25 +36,42 @@ class requestVersion2:
         self.allowed_payment_method = ["cash", "credit", "ebanking", "pay_pal"]
 
     @staticmethod
-    def write_json(response: dict, path_to_write: str = "data/json_test.json"):
+    def write_json(response: dict, path_to_write: str = "data/json_test.json") -> bool:
+        """
+        Write a json file in a specific path with the response of the API response.
+        :param response: API response
+        :param path_to_write: path to write the json file
+        :return: True if the file is written correctly or raise an error in case of failure
+        """
         try:
             with open(f"{path_to_write}", "w") as outfile:
                 json_str = json.dumps(response, indent=len(response))
                 outfile.write(json_str)
+            return True
         except IOError:
             raise "Error writing JSON"
 
     @staticmethod
-    def read_json(path_to_json: str):
+    def read_json(path_to_json: str) -> dict:
+        """
+        Read a json file from a specific path.
+        :param path_to_json: path to the json file
+        :return: A json object with the data of the json file or raise an error in case of failure
+        """
         try:
             with open(path_to_json, 'r') as file:
                 json_data = json.load(file)
+            return json_data
         except IOError:
             raise "Error read JSON"
 
-        return json_data
-
-    def check_document(self, path, extension):
+    def check_document(self, path, extension) -> bool:
+        """
+        Check if the document is valid.
+        :param path: path to the document
+        :param extension: extension of the document
+        :return: True if the document is valid or raise an error in case of failure
+        """
 
         if not (os.path.exists(path)):
             raise FileNotFoundError("Document not found")
@@ -59,7 +86,12 @@ class requestVersion2:
         return True
 
     @staticmethod
-    def connection_is_success(response: requests.request):
+    def connection_is_success(response: requests.request) -> bool:
+        """
+        Check if the connection is successful.
+        :param response: API response
+        :return: True if the connection is successful or raise an error in case of failure
+        """
 
         if response.status_code == 200:
             return True
@@ -68,14 +100,34 @@ class requestVersion2:
                                   f"{response.text}")
 
     @staticmethod
-    def process_response(response_request):
+    def process_response(response_request: dict) -> dict:
+        """
+        Process the response of the API request in order to create compability with the frontend.
+        :param response_request: response of the API request
+        :return: A json object with the data of the response of the API request formatted
+        """
         response_in_str = re.sub('true', '"true"', response_request.text)
         response_in_str = re.sub('false', '"false"', response_in_str)
         response_in_json = json.loads(response_in_str, parse_int=str, parse_float=str, parse_constant=str)
 
         return response_in_json
 
-    def basic_request(self, r_type, url, header: dict = {}, payload: dict = {}, files: dict = {}):
+    def basic_request(self, r_type: str, url: str, header=None, payload=None, files=None) -> dict:
+        """
+        Make a basic http request to the API.
+        :param r_type: Type of request (GET, POST, PUT, or DELETE)
+        :param url: URL to make the request
+        :param header: Header of the request
+        :param payload: Payload with the data of the request
+        :param files: Files to upload
+        :return: a response in json format
+        """
+        if files is None:
+            files = {}
+        if payload is None:
+            payload = {}
+        if header is None:
+            header = {}
 
         r = requests.request(r_type, url, headers=header, data=payload, files=files)
 
@@ -84,11 +136,10 @@ class requestVersion2:
             return response_in_json
 
     @staticmethod
-    def access_token_is_valid(access_token):
+    def access_token_is_valid(access_token: str) -> bool:
         """A simple test method to determine if an access_token is valid. No request payload.
         :return: True if the access_token is valid. False otherwise.
         """
-
         if access_token:
             url = 'https://hotels.cloudbeds.com/api/v1.1/access_token_check'
             header = {'Authorization': 'Bearer ' + access_token}
@@ -101,7 +152,11 @@ class requestVersion2:
         else:
             raise ValueError("access_token is empty")
 
-    def get_access_token_from_code(self):
+    def get_access_token_from_code(self) -> Tuple[str, str]:
+        """
+        Get the access token via OAuth from the code.
+        :return: A tuple with the access token and the refresh token
+        """
 
         url = 'https://hotels.cloudbeds.com/api/v1.1/access_token'
         payload = {
@@ -117,12 +172,16 @@ class requestVersion2:
         if r.status_code == 200:
             self.write_json(response, self.TOKENS_PATH)
             return response['access_token'], response['refresh_token']
-
         else:
             raise ConnectionError(f"Status code: {r.status_code}.\n"
                                   f"{response}")
 
-    def get_access_token_from_refresh_token(self, refresh_token):
+    def get_access_token_from_refresh_token(self, refresh_token: str) -> Tuple[str, str]:
+        """
+        Get the access token via OAuth from the refresh token.
+        :param refresh_token: Refresh token to get the access token
+        :return: A tuple with the new access token and the new refresh token
+        """
 
         url = 'https://hotels.cloudbeds.com/api/v1.1/access_token'
         payload = {
@@ -139,7 +198,7 @@ class requestVersion2:
             self.write_json(response, self.TOKENS_PATH)
             return response['access_token'], response['refresh_token']
 
-    def update_tokens(self):
+    def update_tokens(self) -> Tuple[str, str]:
         """Update the access_token and the refresh_token. Then save the new values in the tokens.json
         :return: The new values of access_token and refresh_token
         """
@@ -150,20 +209,28 @@ class requestVersion2:
 
             if not self.access_token_is_valid(access_token):
                 access_token, refresh_token = self.get_access_token_from_refresh_token(refresh_token)
-
         else:
             access_token, refresh_token = self.get_access_token_from_code()
 
         self.access_token = access_token
         self.refresh_token = refresh_token
+        return access_token, refresh_token
 
-    def inner_tokens_check_and_update(self):
+    def inner_tokens_check_and_update(self) -> Tuple[str, str]:
+        """
+        Check if the access token is valid. If not, update the tokens.
+        :return: Return the new access token and the new refresh token
+        """
         if not self.access_token_is_valid(self.access_token):
-            self.update_tokens()
+            return self.update_tokens()
 
     # Reservation
-    def get_reservation(self, reservation_id):
-
+    def get_reservation(self, reservation_id: str) -> dict:
+        """
+        Get the reservation with its reservation_id.
+        :param reservation_id: Reservation id to get the reservation
+        :return: A json object with the reservation data
+        """
         self.inner_tokens_check_and_update()
 
         r_type = 'GET'
@@ -173,7 +240,7 @@ class requestVersion2:
         response_json = self.basic_request(r_type, url, header)
         return response_json
 
-    def put_reservation(self, reservation_id: str, status: str):
+    def put_reservation(self, reservation_id: str, status: str) -> dict:
         """
         Updates a reservation, such as custom fields, estimated arrival time, room configuration and reservation status.
         :param reservation_id: Reservation Unique Identifier, one reservation ID per call.
@@ -204,14 +271,14 @@ class requestVersion2:
             response_in_json = self.basic_request(r_type, url, header, payload)
             return response_in_json
 
-    def post_reservation(self, reservation):
+    def post_reservation(self, reservation: str) -> dict:
         """
         Adds a reservation to the selected property.
-        :param reservation:
-        :return:
+        :param reservation: Reservation data in JSON format.
+        :return: A reservation status and the reservation ID in JSON format.
         """
 
-        def edit_reservation_for_api(reservation_json: dict):
+        def edit_reservation_for_api(reservation_json: dict) -> dict:
             """
             Useful function to transform the json form of a reservation to a valid format for CloudBeds API.
             The transformation consists makes a text plain entry of each index in the arrays: rooms, adults and children
@@ -269,7 +336,7 @@ class requestVersion2:
         else:
             return {'success': True, 'reservationID': response_in_json.get('reservationID')}
 
-    def post_reservation_document(self, reservation_id: str, document_path: str):
+    def post_reservation_document(self, reservation_id: str, document_path: str) -> dict:
         """
         Attaches a document to a reservation
         :param document_path: Form-based File Upload. Allowed file types in 'self.allowed_file_types'.
@@ -292,10 +359,14 @@ class requestVersion2:
         r = requests.post(url, headers=header, data=payload, files=reservation_document)
         response_in_json = self.process_response(r)
 
-        if self.connection_is_success(r):
-            return response_in_json
+        return response_in_json
 
-    def get_reservation_invoice_information(self, reservation_id):
+    def get_reservation_invoice_information(self, reservation_id: str) -> dict:
+        """
+        Returns the invoice information for a reservation.
+        :param reservation_id: Reservation identifier (reservationID)
+        :return: a JSON object with the invoice information.
+        """
 
         self.inner_tokens_check_and_update()
 
@@ -310,7 +381,12 @@ class requestVersion2:
         else:
             return {'success': False, 'message': response_in_json.get('message')}
 
-    def reservation_is_paid(self, reservation_id):
+    def reservation_is_paid(self, reservation_id: str) -> dict:
+        """
+        Checks if a reservation is paid.
+        :param reservation_id: Reservation identifier (reservationID)
+        :return: A boolean value indicating if the reservation is paid or not.
+        """
         all_invoice_data = self.get_reservation_invoice_information(reservation_id)
 
         if 'data' in all_invoice_data.keys():
@@ -324,7 +400,12 @@ class requestVersion2:
         else:
             return {"success": "false", "message": all_invoice_data['message']}
 
-    def how_much_left_to_paid(self, reservation_id):
+    def how_much_left_to_paid(self, reservation_id: str) -> dict:
+        """
+        Returns the amount left to pay for a reservation.
+        :param reservation_id: Reservation identifier (reservationID)
+        :return: A JSON object with the amount left to pay.
+        """
         all_invoice_data = self.get_reservation_invoice_information(reservation_id)
 
         if 'data' in all_invoice_data.keys():
@@ -337,31 +418,40 @@ class requestVersion2:
         else:
             return {"success": "false", "message": all_invoice_data['message']}
 
-    def invoice_detailed(self, reservation_id):
+    def invoice_detailed(self, reservation_id: str) -> dict:
+        """
+        Returns the detailed invoice information for a reservation.
+        :param reservation_id: Reservation identifier (reservationID)
+        :return: A JSON object with the detailed invoice information.
+        """
         all_invoice_data = self.get_reservation_invoice_information(reservation_id)['data']
         balance_detailed = all_invoice_data['balanceDetailed']
         balance_detailed.update({"sucess": "true"})
 
         return balance_detailed
 
-    def get_number_of_guests(self, reservation_id):
+    def get_number_of_guests(self, reservation_id: str) -> dict:
         """
         Get the number of guests in a reservation.
         :param reservation_id:  The reservation ID of the reservation.
         :return: The number of guest in the reservation.
         """
-
         reservation = self.get_reservation(reservation_id)
         return len(reservation['data']['guestList'])
 
-    def get_guest_info_in_reservation(self, reservation_id):
+    def get_guest_info_in_reservation(self, reservation_id: str) -> dict:
         """
         Get the information of all the guests in a reservation.
         :param reservation_id:
         :return: List with all the guests' information.
         """
 
-        def filter_guest_info(guest_data):
+        def filter_guest_info(guest_data: dict) -> dict:
+            """
+            Filter the guest information to get only the necessary information.
+            :param guest_data: Guest information as a JSON object.
+            :return: A JSON object with the necessary information.
+            """
             guest_info = {'guestID': guest_data['guestID'],
                           'guestFirstName': guest_data['guestFirstName'],
                           'guestLastName': guest_data['guestLastName'],
@@ -394,7 +484,11 @@ class requestVersion2:
         return guest
 
     # Payment
-    def get_payment_methods(self):
+    def get_payment_methods(self) -> dict:
+        """
+        Get the payment methods available in the account.
+        :return: A JSON object with the payment methods.
+        """
 
         self.inner_tokens_check_and_update()
 
@@ -410,7 +504,15 @@ class requestVersion2:
         elif not response['success']:
             return response
 
-    def post_payment(self, reservation_id: str, amount: float, payment_type: str, card_type: str):
+    def post_payment(self, reservation_id: str, amount: float, payment_type: str, card_type: str) -> dict:
+        """
+        Post a payment to a reservation.
+        :param reservation_id: Reservation identifier (reservationID)
+        :param amount: Amount to pay
+        :param payment_type: Payment type (cash, credit, or debit)
+        :param card_type: Card type (Visa, MasterCard, etc.)
+        :return: A JSON object with the payment information.
+        """
 
         self.inner_tokens_check_and_update()
 
@@ -427,14 +529,16 @@ class requestVersion2:
 
         if self.connection_is_success(r):
             return response
+        else:
+            return {'success': 'false', 'message': response['message']}
 
     # Guest
-    def get_guest(self, reservation_id: str = '', guest_id: str = ''):
+    def get_guest(self, reservation_id: str = '', guest_id: str = '') -> dict:
         """
         Returns information on a guest specified by the Reservation ID parameter or by Guest ID
         :param reservation_id: Reservation ID used as query in the search.
         :param guest_id: Guest ID used as query in the search.
-        :return:
+        :return: A JSON object with the guest information.
         """
         self.inner_tokens_check_and_update()
 
@@ -452,12 +556,12 @@ class requestVersion2:
         elif not response['success']:
             return response
 
-    def update_guest_info(self, reservation_id, guest_id, guest_info):
+    def update_guest_info(self, reservation_id: str, guest_id: str, guest_info: dict) -> dict:
         """
         Updates an existing guest with information provided. At least one information field is required for this call.
-        :param reservation_id:
-        :param guest_id:
-        :param guest_info:
+        :param reservation_id: Reservation identifier (reservationID)
+        :param guest_id: Guest identifier (guestID)
+        :param guest_info: A JSON object with the guest information to update
         :return: True if the info was update or a response in other cases.
         """
 
@@ -472,11 +576,11 @@ class requestVersion2:
         response = json.loads(r.text, parse_int=str)
 
         if self.connection_is_success(r) and response['success']:
-            return True
+            return {'success': 'true'}
         elif not response['success']:
             return response
 
-    def post_guest(self, reservation_id, guest_info):
+    def post_guest(self, reservation_id: str, guest_info: dict) -> dict:
         """
         Adds a guest to reservation as an additional guest.
         :param reservation_id: Reservation id where the guest is added.
@@ -495,11 +599,11 @@ class requestVersion2:
         response = json.loads(r.text, parse_int=str)
 
         if self.connection_is_success(r) and response['success']:
-            return True
+            return {'success': 'true'}
         elif not response['success']:
             return response
 
-    def post_guest_document(self, guest_id: str, document_path: str):
+    def post_guest_document(self, guest_id: str, document_path: str) -> dict:
         """
         Attaches a document to a guest.
         :param document_path: Path to the guest document to upload.
@@ -523,6 +627,8 @@ class requestVersion2:
 
         if self.connection_is_success(r):
             return response
+        else:
+            return {'success': 'false', 'message': response['message']}
 
     # Rooms
     def get_available_room_types(self, start_date, end_date, rooms: int = 1, adults: int = 1, children: int = 0):
