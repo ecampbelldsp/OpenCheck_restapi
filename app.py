@@ -199,12 +199,10 @@ def get_reservation_invoice_information():
         :param json: a reservation's invoice information in json format.
         :return: a filtered invoice information (balance, paid, grandTotal, etc) in json format.
         """
-        reservation_out = {}
-        reservation_out['success'] = 'true'
-        reservation_out['paid'] = json['paid']
-        reservation_out['total'] = json['grandTotal']
-        reservation_out['balance'] = float(json['grandTotal']) - float(json['paid'])
-        reservation_out['paidStatus'] = 'false' if reservation_out['balance'] > 0 else 'true'
+        reservation_out = {'success': 'true', 'paid': json['paid'], 'total': json['grandTotal'],
+                           'balance': str(float(json['grandTotal']) - float(json['paid']))}
+
+        reservation_out['paidStatus'] = 'false' if float(reservation_out['balance']) > 0 else 'true'
         return reservation_out
 
     reservation_id = request.args.get('reservationID', None)

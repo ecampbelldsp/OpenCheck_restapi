@@ -437,7 +437,11 @@ class requestVersion2:
         :return: The number of guest in the reservation.
         """
         reservation = self.get_reservation(reservation_id)
-        return len(reservation['data']['guestList'])
+
+        if reservation['success'] == 'true':
+            return {'success': 'true', 'numberOfGuests': len(reservation['data']['guestList'])}
+        else:
+            return {'success': 'false', 'message': reservation['message']}
 
     def get_guest_info_in_reservation(self, reservation_id: str) -> dict:
         """
@@ -476,12 +480,15 @@ class requestVersion2:
         guest = []
         reservation = self.get_reservation(reservation_id)
 
-        guests_dict = reservation['data']['guestList']
-        for guest_id in guests_dict.keys():
-            guest_all_data = guests_dict[guest_id]
-            guest.append(filter_guest_info(guest_all_data))
+        if reservation['success'] != 'false':
+            guests_dict = reservation['data']['guestList']
+            for guest_id in guests_dict.keys():
+                guest_all_data = guests_dict[guest_id]
+                guest.append(filter_guest_info(guest_all_data))
 
-        return guest
+            return {"success": "true", "guest": guest}
+        else:
+            return {"success": "false", "message": reservation['message']}
 
     # Payment
     def get_payment_methods(self) -> dict:
