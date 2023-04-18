@@ -439,7 +439,7 @@ class requestVersion2:
         reservation = self.get_reservation(reservation_id)
 
         if reservation['success'] == 'true':
-            return {'success': 'true', 'numberOfGuests': len(reservation['data']['guestList'])}
+            return {'success': 'true', 'numberOfGuests': str(len(reservation['data']['guestList']))}
         else:
             return {'success': 'false', 'message': reservation['message']}
 
